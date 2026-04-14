@@ -35,13 +35,18 @@ function App() {
   const [contentReady, setContentReadyState] = useState(getContentReady());
   const [page, setPage] = useState('dashboard');
 
-  // Re-read config after auth sync completes (restores session from Supabase)
+  // Always read fresh from localStorage on each render after auth completes.
+  // This ensures we pick up config synced from Supabase by AuthContext.
+  const liveConfig = authLoading ? config : getConfig();
+  const liveContentReady = authLoading ? contentReady : getContentReady();
+
+  // Keep React state in sync for child components
   useEffect(() => {
-    if (!authLoading && user) {
+    if (!authLoading) {
       setConfigState(getConfig());
       setContentReadyState(getContentReady());
     }
-  }, [authLoading, user]);
+  }, [authLoading, profile]);
 
   // Auth loading spinner
   if (authLoading) {
@@ -95,7 +100,7 @@ function App() {
   };
 
   // Onboarding (no setup yet)
-  if (!config.setupComplete) {
+  if (!liveConfig.setupComplete) {
     return (
       <>
         <div className="top-nav">
@@ -112,13 +117,13 @@ function App() {
   }
 
   // Content generation (runs once after onboarding)
-  if (!contentReady) {
+  if (!liveContentReady) {
     return (
       <>
         <div className="top-nav">
           <span className="top-nav-logo">Immerse48</span>
           <div className="top-nav-right">
-            <span className="nav-lang-badge">{config.language}</span>
+            <span className="nav-lang-badge">{liveConfig.language}</span>
           </div>
         </div>
         <ContentLoader onComplete={handleContentReady} />
@@ -161,7 +166,7 @@ function App() {
           ))}
         </div>
         <div className="top-nav-right">
-          <span className="nav-lang-badge">{config.language}</span>
+          <span className="nav-lang-badge">{liveConfig.language}</span>
           <button className="nav-reset" onClick={handleReset}>Reset</button>
         </div>
       </div>
