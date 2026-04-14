@@ -15,6 +15,7 @@ import Journal from './pages/Journal';
 import Conversation from './pages/Conversation';
 import Progress from './pages/Progress';
 import Profile from './pages/Profile';
+import BottomNav from './components/BottomNav';
 
 const TABS = [
   { id: 'dashboard', label: 'Dashboard' },
@@ -173,6 +174,7 @@ function App() {
       <div className="main">
         {renderPage()}
       </div>
+      <BottomNav currentPage={page} onNavigate={setPage} />
     </>
   );
 }

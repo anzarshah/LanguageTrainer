@@ -34,30 +34,15 @@ export default function Auth() {
   };
 
   return (
-    <div style={{
-      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-      minHeight: '100vh', padding: '40px 24px', background: 'var(--bg)',
-    }}>
+    <div className="auth-page">
       <div style={{ maxWidth: 400, width: '100%' }}>
-        {/* Logo */}
-        <div style={{ textAlign: 'center', marginBottom: 40 }}>
-          <h1 style={{
-            fontFamily: 'var(--font-heading)', fontSize: 32, fontWeight: 700,
-            color: 'var(--primary)', marginBottom: 4,
-          }}>
-            Immerse48
-          </h1>
-          <p style={{ fontSize: 14, color: 'var(--text-muted)' }}>
-            Have a conversation in any language in 48 hours
-          </p>
+        <div className="auth-logo">
+          <h1>Immerse48</h1>
+          <p>Have a conversation in any language in 48 hours</p>
         </div>
 
-        {/* Form card */}
-        <div className="card card-lg" style={{ padding: 28 }}>
-          <h2 style={{
-            fontFamily: 'var(--font-heading)', fontSize: 22, fontWeight: 600,
-            marginBottom: 20, color: 'var(--text)',
-          }}>
+        <div className="auth-card">
+          <h2>
             {mode === 'signin' ? 'Welcome back' : 'Create your account'}
           </h2>
 
@@ -65,7 +50,7 @@ export default function Auth() {
           {success && (
             <div style={{
               background: 'rgba(46,125,82,0.08)', color: '#2E7D52',
-              padding: '10px 14px', borderRadius: 10, fontSize: 13, marginBottom: 16,
+              padding: '10px 14px', borderRadius: 'var(--radius)', fontSize: 13, marginBottom: 16,
             }}>
               {success}
             </div>
@@ -111,7 +96,7 @@ export default function Auth() {
               className="btn btn-primary btn-full"
               type="submit"
               disabled={loading}
-              style={{ padding: '12px 20px', fontSize: 15 }}
+              style={{ padding: '14px 20px', fontSize: 15 }}
             >
               {loading
                 ? (mode === 'signin' ? 'Signing in...' : 'Creating account...')
@@ -153,9 +138,7 @@ export default function Auth() {
           </div>
         </div>
 
-        <p style={{
-          textAlign: 'center', marginTop: 20, fontSize: 12, color: 'var(--text-hint)',
-        }}>
+        <p className="auth-footer">
           Built on Comprehensible Input, Spaced Repetition, and Output Forcing. Powered by Claude AI.
         </p>
       </div>

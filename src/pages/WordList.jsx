@@ -127,6 +127,7 @@ export default function WordListPage() {
             ))}
           </div>
 
+          {/* Desktop table */}
           <table className="word-table">
             <thead>
               <tr>
@@ -143,21 +144,44 @@ export default function WordListPage() {
                 <tr key={w.rank} className={learned.includes(w.rank) ? 'learned' : ''}>
                   <td>{w.rank}</td>
                   <td style={{ fontWeight: 600, fontSize: 15 }}>{w.word}</td>
-                  <td style={{ fontStyle: 'italic', color: 'var(--color-text-secondary)' }}>{w.romanization || '—'}</td>
-                  <td><span className={`tag tag-vocab`}>{w.partOfSpeech}</span></td>
+                  <td style={{ fontStyle: 'italic', color: 'var(--text-hint)' }}>{w.romanization || '—'}</td>
+                  <td><span className="tag tag-vocab">{w.partOfSpeech}</span></td>
                   <td>{w.english}</td>
                   <td>
                     <input
                       type="checkbox"
                       checked={learned.includes(w.rank)}
                       onChange={() => toggleLearned(w.rank)}
-                      style={{ width: 16, height: 16, accentColor: 'var(--color-success)' }}
+                      style={{ width: 18, height: 18, accentColor: 'var(--primary)' }}
                     />
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
+
+          {/* Mobile card view */}
+          <div className="word-cards-mobile">
+            {pageWords.map((w) => (
+              <div key={w.rank} className={`word-card-item ${learned.includes(w.rank) ? 'learned' : ''}`}>
+                <div className="word-card-rank">{w.rank}</div>
+                <div className="word-card-main">
+                  <div className="word-card-word">{w.word}</div>
+                  {w.romanization && <div className="word-card-romanization">{w.romanization}</div>}
+                  <div className="word-card-english">{w.english}</div>
+                </div>
+                <div className="word-card-right">
+                  <span className="tag tag-vocab">{w.partOfSpeech}</span>
+                  <input
+                    type="checkbox"
+                    checked={learned.includes(w.rank)}
+                    onChange={() => toggleLearned(w.rank)}
+                    style={{ width: 20, height: 20, accentColor: 'var(--primary)' }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
 
           {totalPages > 1 && (
             <div style={{ display: 'flex', gap: 8, justifyContent: 'center', marginTop: 16 }}>
