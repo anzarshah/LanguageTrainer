@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
-import { getConfig, getConversations, setConversations } from '../utils/storage';
+import { getConfig, getConversations } from '../utils/storage';
+import { addConversation } from '../utils/db';
 import { chat } from '../utils/api';
 import ApiKeyPrompt from '../components/ApiKeyPrompt';
 
@@ -105,14 +106,12 @@ Start by greeting the user and setting up the scenario in ${config.language} wit
       setMessages([...newMessages, { role: 'ai', ...parsed }]);
 
       // Save conversation
-      const saved = getConversations();
-      const current = {
+      addConversation({
         id: Date.now(),
         scenario,
-        date: new Date().toISOString(),
+        messages: [...newMessages, { role: 'ai', ...parsed }],
         messageCount: newMessages.length + 1,
-      };
-      setConversations([current, ...saved.slice(0, 19)]);
+      }, config.language);
     } catch (err) {
       setError('Failed to send: ' + err.message);
     } finally {

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from 'recharts';
-import { getConfig, getProgressData, setProgressData, getLearnedWords, getFlashcardProgress } from '../utils/storage';
+import { getConfig, getProgressData, getLearnedWords, getFlashcardProgress } from '../utils/storage';
+import { updateProgressData, addSession } from '../utils/db';
 
 export default function Progress() {
   const config = getConfig();
@@ -43,15 +44,22 @@ export default function Progress() {
       skills: data.skills,
     };
     setData(updated);
-    setProgressData(updated);
+    updateProgressData({
+      wordsStudied: updated.wordsStudied,
+      streak: updated.streak,
+      lastSessionDate: updated.lastSessionDate,
+      skills: updated.skills,
+    });
+    addSession(session);
     setLogging(false);
     setLogForm({ flashcards: false, listening: false, speaking: false, writing: false, newWords: 0 });
   };
 
   const updateSkill = (skill, value) => {
-    const updated = { ...data, skills: { ...data.skills, [skill]: parseInt(value) || 1 } };
+    const newSkills = { ...data.skills, [skill]: parseInt(value) || 1 };
+    const updated = { ...data, skills: newSkills };
     setData(updated);
-    setProgressData(updated);
+    updateProgressData({ skills: newSkills });
   };
 
   const last7Days = Array.from({ length: 7 }, (_, i) => {

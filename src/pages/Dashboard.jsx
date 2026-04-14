@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import { getConfig, getWordList, setWordList, getSentenceStructures, setSentenceStructures, getFlashcardProgress, setFlashcardProgress, getLearnedWords, getProgressData, getJournalEntries, getConversations } from '../utils/storage';
+import { getConfig, getWordList, setWordList, getSentenceStructures, setSentenceStructures, getFlashcardProgress, getLearnedWords, getProgressData, getJournalEntries, getConversations } from '../utils/storage';
+import { upsertFlashcardProgress } from '../utils/db';
 import { generateContent } from '../utils/api';
 
 export default function Dashboard({ onNavigate }) {
@@ -87,7 +88,7 @@ export default function Dashboard({ onNavigate }) {
       },
     };
     setProgress(newProgress);
-    setFlashcardProgress(newProgress);
+    upsertFlashcardProgress(key, newProgress[key]);
     setSessionReviewed((prev) => prev + 1);
     setFlipped(false);
     setCurrentIndex((prev) => (prev + 1) % Math.max(sortedDeck.length, 1));

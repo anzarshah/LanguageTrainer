@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { getConfig, getScriptInfo, setScriptInfo, getScriptProgress, setScriptProgress } from '../utils/storage';
+import { getConfig, getScriptInfo, setScriptInfo, getScriptProgress } from '../utils/storage';
+import { upsertScriptProgress } from '../utils/db';
 import { generateContent } from '../utils/api';
 
 export default function ScriptTrainer() {
@@ -36,9 +37,9 @@ export default function ScriptTrainer() {
   };
 
   const toggleMastered = (char) => {
-    const updated = { ...mastered, [char]: !mastered[char] };
-    setMastered(updated);
-    setScriptProgress(updated);
+    const newVal = !mastered[char];
+    setMastered({ ...mastered, [char]: newVal });
+    upsertScriptProgress(char, newVal);
   };
 
   const startQuiz = () => {
@@ -64,9 +65,8 @@ export default function ScriptTrainer() {
       total: prev.total + 1,
     }));
     if (correct) {
-      const updated = { ...mastered, [quizChar.char]: true };
-      setMastered(updated);
-      setScriptProgress(updated);
+      setMastered({ ...mastered, [quizChar.char]: true });
+      upsertScriptProgress(quizChar.char, true);
     }
   };
 

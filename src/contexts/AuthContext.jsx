@@ -1,6 +1,14 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
-import { getProfile as dbGetProfile, getUserContent } from '../utils/db';
+import {
+  getProfile as dbGetProfile, getUserContent,
+  getFlashcardProgress as dbGetFlashcardProgress,
+  getLearnedWords as dbGetLearnedWords,
+  getJournalEntries as dbGetJournalEntries,
+  getConversations as dbGetConversations,
+  getProgressData as dbGetProgressData,
+  getScriptProgress as dbGetScriptProgress,
+} from '../utils/db';
 import { getPrebuiltData } from '../data/index';
 import * as store from '../utils/storage';
 
@@ -78,18 +86,27 @@ export function AuthProvider({ children }) {
       if (hasContent && store.getSentenceStructures().length > 0 &&
           store.getScriptInfo() !== null && store.getRoadmap() !== null) {
         store.setContentReady(true);
-        return;
+      } else {
+        // Fallback: load from pre-built data if Supabase had nothing
+        const prebuilt = getPrebuiltData(language);
+        if (prebuilt) {
+          store.setWordList(prebuilt.wordList);
+          store.setSentenceStructures(prebuilt.sentenceStructures);
+          store.setScriptInfo(prebuilt.scriptInfo);
+          store.setRoadmap(prebuilt.roadmap);
+          store.setContentReady(true);
+        }
       }
 
-      // Fallback: load from pre-built data if Supabase had nothing
-      const prebuilt = getPrebuiltData(language);
-      if (prebuilt) {
-        store.setWordList(prebuilt.wordList);
-        store.setSentenceStructures(prebuilt.sentenceStructures);
-        store.setScriptInfo(prebuilt.scriptInfo);
-        store.setRoadmap(prebuilt.roadmap);
-        store.setContentReady(true);
-      }
+      // Restore all progress data from Supabase (caches to localStorage)
+      await Promise.all([
+        dbGetFlashcardProgress(),
+        dbGetLearnedWords(language),
+        dbGetJournalEntries(language),
+        dbGetConversations(language),
+        dbGetProgressData(),
+        dbGetScriptProgress(),
+      ]);
     } catch {
       // Best-effort restore; ContentLoader will handle missing content
     }

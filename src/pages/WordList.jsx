@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { getConfig, getWordList, setWordList, getLearnedWords, setLearnedWords } from '../utils/storage';
+import { addLearnedWord } from '../utils/db';
 import { generateContent } from '../utils/api';
 
 const CATEGORIES = ['All', 'Pronoun', 'Verb', 'Noun', 'Adjective', 'Conjunction', 'Number', 'Question', 'Adverb', 'Preposition', 'Other'];
@@ -34,9 +35,16 @@ export default function WordListPage() {
   };
 
   const toggleLearned = (rank) => {
-    const updated = learned.includes(rank) ? learned.filter((r) => r !== rank) : [...learned, rank];
-    setLearned(updated);
-    setLearnedWords(updated);
+    if (learned.includes(rank)) {
+      const updated = learned.filter((r) => r !== rank);
+      setLearned(updated);
+      setLearnedWords(updated);
+    } else {
+      const word = words.find(w => w.rank === rank);
+      const updated = [...learned, rank];
+      setLearned(updated);
+      addLearnedWord(word?.word || String(rank), rank, config.language);
+    }
   };
 
   const filtered = words.filter((w) => {

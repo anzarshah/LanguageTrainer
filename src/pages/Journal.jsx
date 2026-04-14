@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { getConfig, getJournalEntries, setJournalEntries } from '../utils/storage';
+import { getConfig, getJournalEntries } from '../utils/storage';
+import { addJournalEntry } from '../utils/db';
 import { chat } from '../utils/api';
 import ApiKeyPrompt from '../components/ApiKeyPrompt';
 
@@ -45,7 +46,7 @@ Be warm, encouraging, and supportive. If the user writes in English or mixed Eng
 
       const updated = [entry, ...entries];
       setEntries(updated);
-      setJournalEntries(updated);
+      addJournalEntry(entry, config.language);
       setFeedback(result.content);
       setSelectedEntry(entry);
     } catch (err) {
