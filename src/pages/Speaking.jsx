@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { getConfig, getConversations, setConversations } from '../utils/storage';
 import { chat } from '../utils/api';
+import ApiKeyPrompt from '../components/ApiKeyPrompt';
 
 const PHRASES = [
   { id: 1, target: null, english: 'Hello, how are you?' },
@@ -16,7 +17,7 @@ const PHRASES = [
 ];
 
 export default function Speaking({ onNavigate }) {
-  const config = getConfig();
+  const [config, setConfigLocal] = useState(getConfig());
   const [phrases, setPhrases] = useState(PHRASES);
   const [currentIdx, setCurrentIdx] = useState(0);
   const [recording, setRecording] = useState(false);
@@ -24,6 +25,7 @@ export default function Speaking({ onNavigate }) {
   const [loading, setLoading] = useState(false);
   const [phrasesLoaded, setPhrasesLoaded] = useState(false);
   const [error, setError] = useState('');
+  const [showKeyPrompt, setShowKeyPrompt] = useState(false);
 
   // Generate phrases in target language on first load
   useEffect(() => {
@@ -33,6 +35,10 @@ export default function Speaking({ onNavigate }) {
   }, []);
 
   const loadPhrases = async () => {
+    if (!config.apiKey) {
+      setShowKeyPrompt(true);
+      return;
+    }
     setLoading(true);
     try {
       const result = await chat(
@@ -117,6 +123,15 @@ export default function Speaking({ onNavigate }) {
         <div className="spinner" />
         <p className="loading-text">Preparing {config.language} phrases...</p>
       </div>
+    );
+  }
+
+  if (showKeyPrompt) {
+    return (
+      <ApiKeyPrompt
+        onKeySet={() => { setConfigLocal(getConfig()); setShowKeyPrompt(false); }}
+        onCancel={() => setShowKeyPrompt(false)}
+      />
     );
   }
 

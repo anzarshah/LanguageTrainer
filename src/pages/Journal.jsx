@@ -1,15 +1,17 @@
 import { useState, useEffect } from 'react';
 import { getConfig, getJournalEntries, setJournalEntries } from '../utils/storage';
 import { chat } from '../utils/api';
+import ApiKeyPrompt from '../components/ApiKeyPrompt';
 
 export default function Journal() {
-  const config = getConfig();
+  const [config, setConfigLocal] = useState(getConfig());
   const [entries, setEntries] = useState(getJournalEntries());
   const [text, setText] = useState('');
   const [feedback, setFeedback] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [selectedEntry, setSelectedEntry] = useState(null);
+  const [showKeyPrompt, setShowKeyPrompt] = useState(false);
 
   const systemPrompt = `You are a helpful ${config.language} tutor. The user is a beginner learning ${config.language}. Review their journal entry and respond with:
 
@@ -21,6 +23,10 @@ Be warm, encouraging, and supportive. If the user writes in English or mixed Eng
 
   const handleSubmit = async () => {
     if (!text.trim()) return;
+    if (!config.apiKey) {
+      setShowKeyPrompt(true);
+      return;
+    }
     setLoading(true);
     setError('');
     setFeedback(null);
@@ -65,6 +71,15 @@ Be warm, encouraging, and supportive. If the user writes in English or mixed Eng
     const d = new Date(iso);
     return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
   };
+
+  if (showKeyPrompt) {
+    return (
+      <ApiKeyPrompt
+        onKeySet={() => { setConfigLocal(getConfig()); setShowKeyPrompt(false); }}
+        onCancel={() => setShowKeyPrompt(false)}
+      />
+    );
+  }
 
   return (
     <div>

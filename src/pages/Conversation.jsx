@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { getConfig, getConversations, setConversations } from '../utils/storage';
 import { chat } from '../utils/api';
+import ApiKeyPrompt from '../components/ApiKeyPrompt';
 
 const SCENARIOS = [
   { id: 'intro', label: 'Introduce Yourself', emoji: '👋' },
@@ -12,13 +13,23 @@ const SCENARIOS = [
 ];
 
 export default function Conversation() {
-  const config = getConfig();
+  const [config, setConfigLocal] = useState(getConfig());
   const [scenario, setScenario] = useState(null);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showKeyPrompt, setShowKeyPrompt] = useState(false);
   const messagesEndRef = useRef(null);
+
+  if (showKeyPrompt || !config.apiKey) {
+    return (
+      <ApiKeyPrompt
+        onKeySet={() => { setConfigLocal(getConfig()); setShowKeyPrompt(false); }}
+        onCancel={() => setShowKeyPrompt(false)}
+      />
+    );
+  }
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });

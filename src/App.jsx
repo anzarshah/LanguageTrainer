@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from './contexts/AuthContext';
 import { getConfig } from './utils/storage';
 import { storage, getContentReady } from './utils/storage';
@@ -14,6 +14,7 @@ import ScriptTrainer from './pages/ScriptTrainer';
 import Journal from './pages/Journal';
 import Conversation from './pages/Conversation';
 import Progress from './pages/Progress';
+import Profile from './pages/Profile';
 
 const TABS = [
   { id: 'dashboard', label: 'Dashboard' },
@@ -25,6 +26,7 @@ const TABS = [
   { id: 'journal', label: 'Journal' },
   { id: 'conversation', label: 'Chat' },
   { id: 'progress', label: 'Progress' },
+  { id: 'profile', label: 'Profile' },
 ];
 
 function App() {
@@ -32,6 +34,14 @@ function App() {
   const [config, setConfigState] = useState(getConfig());
   const [contentReady, setContentReadyState] = useState(getContentReady());
   const [page, setPage] = useState('dashboard');
+
+  // Re-read config after auth sync completes (restores session from Supabase)
+  useEffect(() => {
+    if (!authLoading && user) {
+      setConfigState(getConfig());
+      setContentReadyState(getContentReady());
+    }
+  }, [authLoading, user]);
 
   // Auth loading spinner
   if (authLoading) {
@@ -130,6 +140,7 @@ function App() {
       case 'journal': return <Journal />;
       case 'conversation': return <Conversation />;
       case 'progress': return <Progress />;
+      case 'profile': return <Profile onSignOut={handleSignOut} />;
       default: return <Dashboard onNavigate={navigate} />;
     }
   };
@@ -151,11 +162,6 @@ function App() {
         </div>
         <div className="top-nav-right">
           <span className="nav-lang-badge">{config.language}</span>
-          {authConfigured && user && (
-            <button className="nav-reset" onClick={handleSignOut} title="Sign out">
-              {profile?.display_name || user.email?.split('@')[0] || 'Account'}
-            </button>
-          )}
           <button className="nav-reset" onClick={handleReset}>Reset</button>
         </div>
       </div>

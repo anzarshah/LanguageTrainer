@@ -1,5 +1,8 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
+import { getProfile as dbGetProfile, getUserContent } from '../utils/db';
+import { getPrebuiltData } from '../data/index';
+import * as store from '../utils/storage';
 
 const AuthContext = createContext(null);
 
@@ -39,14 +42,57 @@ export function AuthProvider({ children }) {
 
   const fetchProfile = async (userId) => {
     try {
+      // Fetch raw profile for display data
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', userId)
         .single();
       if (!error && data) setProfile(data);
+
+      // Sync profile to localStorage config via db layer
+      const config = await dbGetProfile();
+
+      // If setup was completed, restore content from Supabase or prebuilt data
+      if (config && config.setupComplete && config.language) {
+        await restoreContent(config.language);
+      }
     } catch {}
     setLoading(false);
+  };
+
+  const restoreContent = async (language) => {
+    try {
+      // Try restoring from Supabase first
+      const [words, sentences, script, roadmap] = await Promise.all([
+        getUserContent('wordList', language),
+        getUserContent('sentenceStructures', language),
+        getUserContent('scriptInfo', language),
+        getUserContent('roadmap', language),
+      ]);
+
+      // If Supabase had content, it's now in localStorage via getUserContent
+      const hasContent = (words && words.length > 0) ||
+        store.getWordList().length > 0;
+
+      if (hasContent && store.getSentenceStructures().length > 0 &&
+          store.getScriptInfo() !== null && store.getRoadmap() !== null) {
+        store.setContentReady(true);
+        return;
+      }
+
+      // Fallback: load from pre-built data if Supabase had nothing
+      const prebuilt = getPrebuiltData(language);
+      if (prebuilt) {
+        store.setWordList(prebuilt.wordList);
+        store.setSentenceStructures(prebuilt.sentenceStructures);
+        store.setScriptInfo(prebuilt.scriptInfo);
+        store.setRoadmap(prebuilt.roadmap);
+        store.setContentReady(true);
+      }
+    } catch {
+      // Best-effort restore; ContentLoader will handle missing content
+    }
   };
 
   const refreshProfile = async () => {
